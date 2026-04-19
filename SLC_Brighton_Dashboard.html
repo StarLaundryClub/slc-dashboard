@@ -222,6 +222,63 @@
     margin-top: 2px;
   }
 
+  /* ── STATS ROW (service breakdown / commercial / top customers) ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .stat-card-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--teal-mid);
+    margin-bottom: 8px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-card-subtitle {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--teal-mid);
+    margin-top: 10px;
+    margin-bottom: 6px;
+  }
+  .stat-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .stat-table th {
+    color: var(--teal-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 10px;
+    padding: 3px 4px 3px 0;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    font-weight: 600;
+  }
+  .stat-table td {
+    padding: 4px 4px 4px 0;
+    border-bottom: 1px solid rgba(53,59,71,0.4);
+    color: var(--white);
+    font-size: 11px;
+  }
+  .stat-table tr:last-child td { border-bottom: none; }
+  .snum { text-align: right; }
+  .stat-table th.snum { text-align: right; }
+
   /* ── CHARTS GRID ── */
   .charts-grid {
     display: grid;
@@ -302,7 +359,7 @@
   <div class="header-meta">
     <div>Most Recent Full Month</div>
     <div><strong>Mar 2026</strong></div>
-    <div style="margin-top:6px;">Generated 15 Apr 2026, 9:33 PM</div>
+    <div style="margin-top:6px;">Generated 17 Apr 2026, 10:35 PM</div>
   </div>
 </div>
 
@@ -375,32 +432,32 @@
         <div class="snap-item">
           <div class="snap-val">$7,695</div>
           <div class="snap-lbl">MTD Revenue</div>
-          <div class="snap-chg neu">Pace: $15,390</div>
+          <div class="snap-chg neg">▼ 57.1% vs Mar</div>
         </div>
         <div class="snap-item">
           <div class="snap-val">124</div>
           <div class="snap-lbl">MTD Orders</div>
-          <div class="snap-chg neu">Pace: 248</div>
+          <div class="snap-chg neg">▼ 44.1% vs Mar</div>
         </div>
         <div class="snap-item">
           <div class="snap-val">60</div>
           <div class="snap-lbl">New Customers</div>
-          <div class="snap-chg neu">Cents report</div>
+          <div class="snap-chg neg">▼ 40.6% vs Mar</div>
         </div>
         <div class="snap-item">
           <div class="snap-val">$3,054</div>
           <div class="snap-lbl">Dry Cleaning</div>
-          <div class="snap-chg neu">MTD</div>
+          <div class="snap-chg neg">▼ 44.4% vs Mar</div>
         </div>
         <div class="snap-item">
           <div class="snap-val">821 lbs</div>
           <div class="snap-lbl">W&amp;F Weight</div>
-          <div class="snap-chg neu">MTD</div>
+          <div class="snap-chg neg">▼ 58.8% vs Mar</div>
         </div>
         <div class="snap-item">
           <div class="snap-val">48.2%</div>
           <div class="snap-lbl">Repeat Rate</div>
-          <div class="snap-chg neu">55 customers</div>
+          <div class="snap-chg pos">▲ 12.4% vs Mar</div>
         </div>
         <div class="snap-item">
           <div class="snap-val">65.8</div>
@@ -410,12 +467,12 @@
         <div class="snap-item">
           <div class="snap-val">11</div>
           <div class="snap-lbl">Deliveries</div>
-          <div class="snap-chg neu">MTD</div>
+          <div class="snap-chg neg">▼ 72.5% vs Mar</div>
         </div>
         <div class="snap-item">
           <div class="snap-val">$2,026</div>
           <div class="snap-lbl">Self-Service Cash</div>
-          <div class="snap-chg neu">MTD (Excel)</div>
+          <div class="snap-chg neg">▼ 66.5% vs Mar</div>
         </div>
       </div>
     </div>
@@ -488,6 +545,19 @@
     </div>
   </div>
 
+  <!-- REVENUE BY SERVICE TYPE (priority — directly under KPI breakdown) -->
+  <div class="section-label">Revenue by Service Type</div>
+  <div class="charts-grid" style="margin-bottom:10px;">
+    <div class="chart-card wide">
+      <div class="chart-title">Monthly Revenue by Service Type ($) — with Total Revenue Line</div>
+      <div class="chart-wrap" style="height:170px;"><canvas id="revenueChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">New Customers</div>
+      <div class="chart-wrap" style="height:170px;"><canvas id="newCustChart"></canvas></div>
+    </div>
+  </div>
+
   <div class="section-divider"></div>
 
   <!-- SELF-SERVICE CHART -->
@@ -509,32 +579,21 @@
 
   <div class="section-divider"></div>
 
-  <!-- CHARTS ROW 1 -->
-  <div class="section-label">7-Month Performance Trends</div>
-  <div class="charts-grid">
-    <div class="chart-card wide">
-      <div class="chart-title">Monthly Revenue by Service Type ($)</div>
-      <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">New Customers</div>
-      <div class="chart-wrap"><canvas id="newCustChart"></canvas></div>
-    </div>
-  </div>
+  <!-- PERFORMANCE TRENDS -->
+  <div class="section-label">Performance Trends</div>
 
-  <!-- CHARTS ROW 2 -->
-  <div class="charts-grid-2" style="margin-top:10px;">
+  <!-- Delivery vs In-Store + Delivery Revenue -->
+  <div class="charts-grid-2" style="margin-top:4px;">
     <div class="chart-card">
       <div class="chart-title">Delivery vs In-Store Orders</div>
       <div class="chart-wrap"><canvas id="channelChart"></canvas></div>
     </div>
     <div class="chart-card">
-      <div class="chart-title">Orders by Service Type</div>
-      <div class="chart-wrap"><canvas id="serviceChart"></canvas></div>
+      <div class="chart-title">Delivery Revenue — Month over Month ($)</div>
+      <div class="chart-wrap"><canvas id="deliveryRevChart"></canvas></div>
     </div>
   </div>
 
-  <!-- CHARTS ROW 3 -->
   <div class="charts-grid-2" style="margin-top:10px;">
     <div class="chart-card">
       <div class="chart-title">W&amp;F Weight (lbs)</div>
@@ -546,7 +605,6 @@
     </div>
   </div>
 
-  <!-- CHARTS ROW 4 -->
   <div class="charts-grid-2" style="margin-top:10px;">
     <div class="chart-card">
       <div class="chart-title">Comforter Program — Orders &amp; Revenue</div>
@@ -558,11 +616,86 @@
     </div>
   </div>
 
-  <!-- CHARTS ROW 5: TOP 5 PRODUCTS -->
   <div class="charts-grid-2" style="margin-top:10px;">
     <div class="chart-card wide" style="grid-column: span 2;">
       <div class="chart-title">Top 5 Products Sold — Units &amp; Revenue (All Months Combined)</div>
       <div class="chart-wrap" style="height:200px;"><canvas id="productsChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section-divider" style="margin-top:12px;"></div>
+
+  <!-- SERVICE BREAKDOWN | COMMERCIAL ACCOUNTS | TOP CUSTOMERS (detail sections) -->
+  <div class="section-label">Detailed Breakdowns</div>
+  <div class="stats-grid" style="margin-top:6px;">
+    <!-- Service Breakdown -->
+    <div class="stat-card">
+      <div class="stat-card-title">Service Breakdown — Mar 2026</div>
+      <table class="stat-table">
+        <tr>
+          <th>Service</th>
+          <th class="snum">Orders</th>
+          <th class="snum">Revenue</th>
+          <th class="snum">Mix</th>
+        </tr>
+          <tr><td>Dry Cleaning</td><td class="snum">124</td><td class="snum">$5,494.00</td><td class="snum">31%</td></tr>
+          <tr><td>Wash &amp; Fold</td><td class="snum">66</td><td class="snum">$4,523.50</td><td class="snum">25%</td></tr>
+          <tr><td>Tailoring</td><td class="snum">40</td><td class="snum">$922.00</td><td class="snum">5%</td></tr>
+          <tr><td>Comforter</td><td class="snum">8</td><td class="snum">$152.00</td><td class="snum">1%</td></tr>
+          <tr><td>Products</td><td class="snum">11</td><td class="snum">$41.27</td><td class="snum">0%</td></tr>
+          <tr><td>Self-Service</td><td class="snum">&mdash;</td><td class="snum">$6,056.00</td><td class="snum">34%</td></tr>
+      </table>
+    </div>
+
+    <!-- Commercial Accounts -->
+    <div class="stat-card">
+      <div class="stat-card-title">Commercial Accounts — Mar 2026</div>
+      <table class="stat-table">
+        <tr>
+          <th>Account</th>
+          <th class="snum">Ord.</th>
+          <th class="snum">Rev.</th>
+          <th class="snum" style="color:var(--amber)">AR Due</th>
+        </tr>
+          <tr><td>Star Laundry Club Nashua</td><td class="snum">8</td><td class="snum">$496.09</td><td class="snum" style="color:var(--amber);font-weight:700">$69.36</td></tr>
+      </table>
+
+          <div style="background:rgba(245,158,11,0.1);border:1px solid var(--amber);border-radius:5px;
+                      padding:6px 10px;display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+            <span style="font-size:10px;color:var(--amber);font-weight:700;text-transform:uppercase;letter-spacing:.5px">⚠ Total Commercial AR</span>
+            <span style="font-size:15px;font-weight:700;color:var(--amber)">$69.36</span>
+          </div>
+          <div style="font-size:10px;color:var(--gray);margin-top:5px">Excluded from retail metrics.</div>
+    </div>
+
+    <!-- Top 5 Customers -->
+    <div class="stat-card">
+      <div class="stat-card-title">Top 5 Customers — Mar 2026</div>
+      <table class="stat-table">
+        <tr>
+          <th>Customer</th>
+          <th class="snum">Ord.</th>
+          <th class="snum">Revenue</th>
+        </tr>
+          <tr><td>1. DANIEL SHANK</td><td class="snum">1</td><td class="snum">$1,390.60</td></tr>
+          <tr><td>2. Valerie Everett</td><td class="snum">1</td><td class="snum">$271.92</td></tr>
+          <tr><td>3. Aliza Mendelevich</td><td class="snum">3</td><td class="snum">$235.61</td></tr>
+          <tr><td>4. Molly Guiberson</td><td class="snum">3</td><td class="snum">$227.44</td></tr>
+          <tr><td>5. Colby Harden</td><td class="snum">15</td><td class="snum">$224.73</td></tr>
+      </table>
+      <div class="stat-card-subtitle">Top 5 Customers — All Time</div>
+      <table class="stat-table">
+        <tr>
+          <th>Customer</th>
+          <th class="snum">Ord.</th>
+          <th class="snum">Revenue</th>
+        </tr>
+          <tr><td>1. Andrew Danford</td><td class="snum">15</td><td class="snum">$1,391.28</td></tr>
+          <tr><td>2. DANIEL SHANK</td><td class="snum">1</td><td class="snum">$1,390.60</td></tr>
+          <tr><td>3. Star Laundry Club Nash</td><td class="snum">17</td><td class="snum">$1,040.50</td></tr>
+          <tr><td>4. Cheryl Ace</td><td class="snum">18</td><td class="snum">$936.75</td></tr>
+          <tr><td>5. Molly Guiberson</td><td class="snum">12</td><td class="snum">$833.18</td></tr>
+      </table>
     </div>
   </div>
 
@@ -571,7 +704,7 @@
 <!-- FOOTER -->
 <div class="footer">
   <div><span class="footer-brand">Star Laundry Club</span> · Brighton KPI Operational Dashboard · Powered by Cents</div>
-  <div>Generated 15 Apr 2026, 9:33 PM &nbsp;&middot;&nbsp; * Partial month (15 of 30 days)</div>
+  <div>Generated 17 Apr 2026, 10:35 PM &nbsp;&middot;&nbsp; * Partial month (15 of 30 days)</div>
 </div>
 
 <script>
@@ -589,11 +722,13 @@ const dlBar = {
 const dlBarInside = {
   anchor: 'center', align: 'center',
   color: '#FFFFFF', font: { size: 9, weight: '600' },
+  clip: false,
   formatter: v => v > 0 ? v.toLocaleString() : '',
 };
 const dlLine = {
   anchor: 'top', align: 'top', offset: 4,
   color: '#CBD5E1', font: { size: 9, weight: '600' },
+  clip: false,
 };
 
 const labels = ["Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026", "Apr 2026*"];
@@ -604,6 +739,7 @@ const AMBER       = '#F59E0B';
 const GRAY        = '#9DA8B4';
 const BG3         = '#2A2F3A';
 const BORDER      = '#353B47';
+const WHITE       = '#FFFFFF';
 
 const gridOpts = {
   color: BORDER,
@@ -614,28 +750,47 @@ const legendOpts = {
   labels: { color: '#CBD5E1', font: { size: 11 }, boxWidth: 12, padding: 10 }
 };
 
-// 1. REVENUE STACKED BAR — labels inside each segment, skip tiny values
+// 1. REVENUE STACKED BAR + TOTAL REVENUE LINE
+const combinedRevs = [21717.68, 19624.53, 18735.31, 13046.78, 14010.82, 15197.37, 17927.53, 7695.09];
 new Chart(document.getElementById('revenueChart'), {
   type: 'bar',
   data: {
     labels,
     datasets: [
-      { label: 'Dry Cleaning',   data: [9016.95, 8329.0, 7938.0, 4392.0, 4806.0, 5895.0, 5494.0, 3054.0],      backgroundColor: TEAL,       borderRadius: 3, stack: 'rev' },
-      { label: 'Wash & Fold',    data: [3644.0, 2652.8, 2590.9, 1592.8, 2219.7, 2137.4, 4523.5, 2036.3],      backgroundColor: TEAL_BRIGHT, borderRadius: 3, stack: 'rev' },
-      { label: 'Tailoring',      data: [822.0, 1201.0, 1284.0, 523.0, 115.0, 1185.5, 922.0, 473.0],    backgroundColor: AMBER,      borderRadius: 3, stack: 'rev' },
-      { label: 'Self-Service',   data: [7653.0, 6792.0, 6337.0, 5616.0, 6154.0, 5177.0, 6056.0, 2026.0], backgroundColor: '#8B5CF6', borderRadius: 3, stack: 'rev' },
+      { label: 'Dry Cleaning',   data: [9016.95, 8329.0, 7938.0, 4392.0, 4806.0, 5895.0, 5494.0, 3054.0],      backgroundColor: TEAL,        borderRadius: 3, stack: 'rev', type: 'bar' },
+      { label: 'Wash & Fold',    data: [3644.0, 2652.8, 2590.9, 1592.8, 2219.7, 2137.4, 4523.5, 2036.3],      backgroundColor: TEAL_BRIGHT, borderRadius: 3, stack: 'rev', type: 'bar' },
+      { label: 'Tailoring',      data: [822.0, 1201.0, 1284.0, 523.0, 115.0, 1185.5, 922.0, 473.0],    backgroundColor: AMBER,       borderRadius: 3, stack: 'rev', type: 'bar' },
+      { label: 'Self-Service',   data: [7653.0, 6792.0, 6337.0, 5616.0, 6154.0, 5177.0, 6056.0, 2026.0], backgroundColor: '#8B5CF6',  borderRadius: 3, stack: 'rev', type: 'bar' },
+      {
+        type: 'line',
+        label: 'Total Revenue',
+        data: combinedRevs,
+        borderColor: WHITE,
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        pointBackgroundColor: WHITE,
+        pointRadius: 4,
+        tension: 0.2,
+        stack: undefined,
+        datalabels: {
+          anchor: 'end', align: 'top', offset: 5,
+          color: WHITE, font: { size: 9, weight: '700' },
+          formatter: v => v ? '$' + (v/1000).toFixed(1) + 'k' : '',
+        },
+      },
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
     plugins: {
       legend: legendOpts,
-      tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString() } },
+      tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': $' + (ctx.parsed.y ?? 0).toLocaleString() } },
       datalabels: { ...dlBarInside, formatter: v => v >= 500 ? '$' + (v/1000).toFixed(1) + 'k' : '' },
     },
     scales: {
       x: { stacked: true, grid: gridOpts, ticks: tickOpts },
-      y: { stacked: true, grid: gridOpts, ticks: { ...tickOpts, callback: v => '$' + (v/1000).toFixed(0) + 'k' } }
+      y: { stacked: true, grid: gridOpts, ticks: { ...tickOpts, callback: v => '$' + (v/1000).toFixed(0) + 'k' },
+           grace: '8%' }
     }
   }
 });
@@ -694,26 +849,41 @@ new Chart(document.getElementById('channelChart'), {
   }
 });
 
-// 4. ORDERS BY SERVICE TYPE — value above each bar
-new Chart(document.getElementById('serviceChart'), {
+// 4. DELIVERY REVENUE — Month over Month
+const dsRevs = [1140.83, 888.81, 1426.04, 1188.69, 1459.1, 2314.47, 4338.69, 939.8];
+new Chart(document.getElementById('deliveryRevChart'), {
   type: 'bar',
   data: {
     labels,
-    datasets: [
-      { label: 'Dry Cleaning', data: [160, 170, 167, 110, 116, 125, 124, 78],  backgroundColor: TEAL, borderRadius: 3 },
-      { label: 'Wash & Fold',  data: [57, 41, 50, 34, 33, 45, 66, 40],  backgroundColor: TEAL_BRIGHT, borderRadius: 3 },
-      { label: 'Tailoring',    data: [24, 31, 27, 19, 10, 48, 40, 11], backgroundColor: AMBER, borderRadius: 3 },
-    ]
+    datasets: [{
+      label: 'Delivery Revenue ($)',
+      data: dsRevs,
+      backgroundColor: TEAL_BRIGHT,
+      borderRadius: 3,
+    },
+    {
+      type: 'line',
+      label: 'Trend',
+      data: dsRevs,
+      borderColor: WHITE,
+      backgroundColor: 'transparent',
+      borderWidth: 1.5,
+      pointBackgroundColor: WHITE,
+      pointRadius: 3,
+      tension: 0.3,
+      datalabels: { display: false },
+    }]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
     plugins: {
-      legend: legendOpts,
-      datalabels: { ...dlBar, formatter: v => v > 0 ? v : '' },
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ' $' + (ctx.parsed.y ?? 0).toLocaleString() } },
+      datalabels: { ...dlBar, formatter: v => v > 0 ? '$' + (v/1000).toFixed(1) + 'k' : '' },
     },
     scales: {
       x: { grid: gridOpts, ticks: tickOpts },
-      y: { grid: gridOpts, ticks: tickOpts, beginAtZero: true }
+      y: { grid: gridOpts, ticks: { ...tickOpts, callback: v => '$' + (v/1000).toFixed(0) + 'k' }, beginAtZero: true }
     }
   }
 });
@@ -789,7 +959,7 @@ new Chart(document.getElementById('ssChart'), {
   }
 });
 
-// AR. ACCOUNTS RECEIVABLE — Balance Due by month (line chart)
+// AR. ACCOUNTS RECEIVABLE — Balance Due by month
 const arBalances = [56.1, 25.5, 403.4, 603.76, 967.39, 194.52, 647.19, 412.05];
 
 new Chart(document.getElementById('arChart'), {
@@ -916,7 +1086,6 @@ new Chart(document.getElementById('membershipChart'), {
 });
 
 // 8. REPEAT RATE % + AVG DAYS BETWEEN ORDERS (dual axis)
-// Months without a Cents repeat report show null (dashed gap in line)
 const repeatPcts  = [4.4, 7.0, 12.1, 12.0, 19.4, 30.6, 42.9, 48.2];
 const avgDays     = [18.0, 21.3, 25.2, 33.9, 57.5, 57.1, 66.7, 65.8];  // null for months without Cents report
 
