@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+:root {
+  --bg:         #1C1F26;
+  --bg2:        #23272F;
+  --bg3:        #2A2F3A;
+  --teal:       #0A9278;
+  --teal-bright:#1EE1DB;
+  --teal-mid:   #57B3A8;
+  --teal-light: #D8EEED;
+  --white:      #FFFFFF;
+  --gray:       #9DA8B4;
+  --border:     #353B47;
+  --pos:        #1EE1DB;
+  --neg:        #FF6B6B;
+  --neu:        #9DA8B4;
+  --amber:      #F59E0B;
+}
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: Arial, sans-serif;
+}
