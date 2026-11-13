@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SLC Nashua — Operational KPI Dashboard | {c["label"]}</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<style>
+  :root {
+    --bg:          #1C1F26;
+    --bg2:         #23272F;
+    --bg3:         #2A2F3A;
+    --teal:        #0A9278;
+    --teal-bright: #1EE1DB;
+    --teal-mid:    #57B3A8;
+    --white:       #FFFFFF;
+    --gray:        #9DA8B4;
+    --border:      #353B47;
+    --pos:         #1EE1DB;
+    --neg:         #FF6B6B;
+    --neu:         #9DA8B4;
+    --amber:       #F59E0B;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #1C1F26 0%, #1a2832 100%);
+    border-bottom: 2px solid var(--teal);
+    padding: 12px 28px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .header img.logo {
+    height: 58px;
+    width: auto;
+    filter: drop-shadow(0 0 8px rgba(30,225,219,0.3));
+  }
+  .header-text { flex: 1; }
+  .header-title { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; color: var(--white); }
+  .header-sub { font-size: 11px; color: var(--teal-mid); margin-top: 2px; letter-spacing: 1px; text-transform: uppercase; }
+  .header-meta { text-align: right; color: var(--gray); font-size: 11px; line-height: 1.5; }
+  .header-meta strong { color: var(--teal-bright); font-size: 12px; }
+
+  /* MAIN WRAPPER */
+  .main { padding: 14px 28px 10px; }
+
+  /* SECTION LABELS */
+  .section-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--teal-mid);
+    margin-bottom: 7px;
+    padding-left: 2px;
+  }
+
+  /* BANNER */
+  .banner {
+    background: rgba(245,158,11,0.12);
+    border: 1px solid var(--amber);
+    border-radius: 6px;
+    padding: 6px 14px;
+    color: var(--amber);
+    font-size: 11px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .banner-icon { font-size: 13px; }
+
+  /* EXECUTIVE SUMMARY */
+  .exec-summary {
+    background: var(--bg2);
+    border: 1px solid var(--teal);
+    border-radius: 8px;
+    padding: 10px 16px 12px;
+    margin-bottom: 14px;
+  }
+  .es-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 7px;
+  }
+  .es-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--teal-bright);
+    white-space: nowrap;
+  }
+  .es-date {
+    font-size: 10px;
+    color: var(--gray);
+  }
+  .es-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px 20px;
+  }
+  .es-col-title {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--teal-mid);
+    margin-bottom: 6px;
+  }
+  .es-row {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    font-size: 11px;
+    line-height: 1.7;
+  }
+  .es-icon { font-size: 11px; flex-shrink: 0; }
+  .es-desc { color: var(--gray); flex: 1; }
+  .es-metric { font-weight: 700; white-space: nowrap; font-size: 11px; }
+
+  /* SNAPSHOT ROW */
+  .snapshot-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .snapshot-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+  }
+  .snapshot-card h3 {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--teal-bright);
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+  .snap-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; }
+  .snap-item { text-align: center; }
+  .snap-val { font-size: 15px; font-weight: 700; color: var(--white); }
+  .snap-lbl { font-size: 9px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 1px; }
+  .snap-chg { font-size: 10px; margin-top: 2px; font-weight: 600; }
+  .snap-chg.pos { color: var(--pos); }
+  .snap-chg.neg { color: var(--neg); }
+  .snap-chg.neu { color: var(--neu); }
+
+  /* KPI CARDS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .kpi-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 10px 8px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .kpi-card:hover { transform: translateY(-2px); border-color: var(--teal); }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--teal), var(--teal-bright));
+  }
+  .kpi-icon { font-size: 14px; margin-bottom: 3px; display: block; }
+  .kpi-val { font-size: 17px; font-weight: 700; color: var(--white); line-height: 1.2; }
+  .kpi-label { font-size: 9px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 3px; }
+  .kpi-chg { font-size: 10px; margin-top: 3px; font-weight: 600; }
+  .kpi-chg.pos { color: var(--pos); }
+  .kpi-chg.neg { color: var(--neg); }
+  .kpi-chg.neu { color: var(--neu); }
+  .kpi-sub { font-size: 9px; color: var(--teal-mid); margin-top: 2px; }
+
+  /* STATS GRID */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .stat-card-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--teal-mid);
+    margin-bottom: 8px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-card-subtitle {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--teal-mid);
+    margin-top: 10px;
+    margin-bottom: 6px;
+  }
+  .stat-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .stat-table th {
+    color: var(--teal-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 10px;
+    padding: 3px 4px 3px 0;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    font-weight: 600;
+  }
+  .stat-table td {
+    padding: 4px 4px 4px 0;
+    border-bottom: 1px solid rgba(53,59,71,0.4);
+    color: var(--white);
+    font-size: 11px;
+  }
+  .stat-table tr:last-child td { border-bottom: none; }
+  .snum { text-align: right; }
+  .num  { text-align: right; }
+  .stat-table th.snum { text-align: right; }
+  .stat-table th.num  { text-align: right; }
+
+  /* CHARTS */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .charts-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .chart-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 12px 8px;
+  }
+  .chart-card.wide { grid-column: span 2; }
+  .chart-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--teal-mid);
+    margin-bottom: 8px;
+  }
+  .chart-wrap { position: relative; height: 155px; }
+  .chart-wrap.tall { height: 240px; }
+  .chart-wrap.medium { height: 185px; }
+  .chart-wrap.short { height: 115px; }
+
+  /* SECTION DIVIDER */
+  .section-divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+  /* FOOTER */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 8px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--gray);
+    font-size: 10px;
+    margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <span style="color:#1EE1DB;font-size:22px;font-weight:700">SLC</span>
+  <div class="header-text">
+    <div class="header-title">Nashua Operational KPI Dashboard</div>
+    <div class="header-sub">300 Main St &nbsp;·&nbsp; Nashua, NH 03060 &nbsp;·&nbsp; October 2026</div>
+  </div>
+  <div class="header-meta">
+    <strong>October 2026 — Full Month</strong><br>
+    Generated November 12, 2026 at 11:08 PM<br>
+    Complete (31 of 31 days)
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- BANNER (partial month only) -->
+  
+
+  <!-- EXECUTIVE SUMMARY -->
+  
+<div class="exec-summary">
+  <div class="es-header">
+    <span class="es-title">&#128203; Executive Summary</span>
+    <span class="es-date">October 2026 · Full month · vs September 2026</span>
+  </div>
+  <div class="es-grid">
+    <div class="es-col">
+      <div class="es-col-title">Revenue</div>
+      <div class="es-row"><span class="es-icon">💰</span><span class="es-desc">Combined revenue: $39,254</span><span class="es-metric" style="color:var(--pos)">▲ 26.7%</span></div>
+      <div class="es-row"><span class="es-icon">🧺</span><span class="es-desc">Cents collected: $14,414</span><span class="es-metric" style="color:var(--pos)">▲ 33.0%</span></div>
+      <div class="es-row"><span class="es-icon">🎰</span><span class="es-desc">Fascard self-svc: $24,839</span><span class="es-metric" style="color:var(--pos)">▲ 23.4%</span></div>
+    </div>
+    <div class="es-col">
+      <div class="es-col-title">Operations</div>
+      <div class="es-row"><span class="es-icon">📋</span><span class="es-desc">Orders: 720</span><span class="es-metric" style="color:var(--pos)">▲ 9.6%</span></div>
+      <div class="es-row"><span class="es-icon">👥</span><span class="es-desc">New customers: 258 · Repeat rate 31.4%</span><span class="es-metric" style="color:var(--neg)">-2.6pts vs Sep</span></div>
+      <div class="es-row"><span class="es-icon">⚠️</span><span class="es-desc">AR outstanding: $2,172.98</span><span class="es-metric" style="color:var(--gray)">excl. from revenue</span></div>
+    </div>
+    <div class="es-col">
+      <div class="es-col-title">Service Highlights</div>
+      <div class="es-row"><span class="es-icon">⭐</span><span class="es-desc">Top service: Dry Cleaning</span><span class="es-metric" style="color:var(--teal-bright)">$4,427</span></div>
+      <div class="es-row"><span class="es-icon">📈</span><span class="es-desc">Biggest gain: Tailoring</span><span class="es-metric" style="color:var(--pos)">+176.3% vs Sep</span></div>
+      <div class="es-row"><span class="es-icon">📉</span><span class="es-desc">Biggest softness: Specialty</span><span class="es-metric" style="color:var(--neg)">-86.9% vs Sep</span></div>
+    </div>
+  </div>
+</div>
+
+  <!-- MONTHLY SNAPSHOT -->
+  <div class="section-label">Monthly Snapshot — Sep vs Oct</div>
+  <div class="snapshot-row">
+
+    <!-- Previous month -->
+    <div class="snapshot-card">
+      <h3>September 2026 — Full Month</h3>
+      <div class="snap-grid">
+        <div class="snap-item">
+          <div class="snap-val">$30,976</div>
+          <div class="snap-lbl">Combined Rev</div>
+          <div class="snap-chg neg">▼ 5.4% vs Aug</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">$10,841</div>
+          <div class="snap-lbl">Cents Collected</div>
+          <div class="snap-chg pos">▲ 1.2% vs Aug</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">$20,136</div>
+          <div class="snap-lbl">Fascard Revenue</div>
+          <div class="snap-chg neu">self-service</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">657</div>
+          <div class="snap-lbl">Total Orders</div>
+          <div class="snap-chg pos">▲ 10.2% vs Aug</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">$2,705</div>
+          <div class="snap-lbl">Dry Cleaning</div>
+          <div class="snap-chg neg">▼ 2.8% vs Aug</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">$3,648</div>
+          <div class="snap-lbl">Shirt Laundry</div>
+          <div class="snap-chg pos">▲ 10.5% vs Aug</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">$3,475</div>
+          <div class="snap-lbl">Wash &amp; Fold</div>
+          <div class="snap-chg neg">▼ 11.0% vs Aug</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">$627</div>
+          <div class="snap-lbl">Delivery Rev</div>
+          <div class="snap-chg pos">▲ 1.3% vs Aug</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">34.0%</div>
+          <div class="snap-lbl">Repeat Rate</div>
+          <div class="snap-chg pos">▲ 3.0% vs Aug</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">1,733 lbs</div>
+          <div class="snap-lbl">W&amp;F Weight</div>
+          <div class="snap-chg neg">▼ 22.4% vs Aug</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current month -->
+    <div class="snapshot-card">
+      <h3>October 2026 — Full Month</h3>
+      <div class="snap-grid">
+        <div class="snap-item">
+          <div class="snap-val">$39,254</div>
+          <div class="snap-lbl">Combined Rev</div>
+          <div class="snap-chg pos">▲ 26.7% vs Sep</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">$14,414</div>
+          <div class="snap-lbl">Cents Collected</div>
+          <div class="snap-chg pos">▲ 33.0% vs Sep</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">$24,839</div>
+          <div class="snap-lbl">Fascard Revenue</div>
+          <div class="snap-chg neu">self-service</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">720</div>
+          <div class="snap-lbl">Orders </div>
+          <div class="snap-chg pos">▲ 9.6% vs Sep</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">$4,427</div>
+          <div class="snap-lbl">Dry Cleaning</div>
+          <div class="snap-chg pos">▲ 63.6% vs Sep</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">$4,043</div>
+          <div class="snap-lbl">Shirt Laundry</div>
+          <div class="snap-chg pos">▲ 10.8% vs Sep</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">$4,337</div>
+          <div class="snap-lbl">Wash &amp; Fold</div>
+          <div class="snap-chg pos">▲ 24.8% vs Sep</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">$120</div>
+          <div class="snap-lbl">Delivery Rev</div>
+          <div class="snap-chg neg">▼ 80.8% vs Sep</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">31.4%</div>
+          <div class="snap-lbl">Repeat Rate</div>
+          <div class="snap-chg neg">▼ 7.6% vs Sep</div>
+        </div>
+        <div class="snap-item">
+          <div class="snap-val">2,116 lbs</div>
+          <div class="snap-lbl">W&amp;F Weight</div>
+          <div class="snap-chg pos">▲ 22.1% vs Sep</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI BREAKDOWN — current month -->
+  <div class="section-label">October 2026 — KPI Breakdown</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <span class="kpi-icon">&#128176;</span>
+      <div class="kpi-val">$39,254</div>
+      <div class="kpi-label">Combined Rev </div>
+      <div class="kpi-chg pos">▲ 26.7% vs Sep</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">&#129516;</span>
+      <div class="kpi-val">$14,414</div>
+      <div class="kpi-label">Cents Collected</div>
+      <div class="kpi-chg pos">▲ 33.0% vs Sep</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">&#129689;</span>
+      <div class="kpi-val">$24,839</div>
+      <div class="kpi-label">Fascard Self-Svc</div>
+      <div class="kpi-sub">self-service only</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">&#128084;</span>
+      <div class="kpi-val">$4,427</div>
+      <div class="kpi-label">Dry Cleaning</div>
+      <div class="kpi-sub">260 orders</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">&#128249;</span>
+      <div class="kpi-val">$4,043</div>
+      <div class="kpi-label">Shirt Laundry</div>
+      <div class="kpi-sub">241 orders</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">&#9878;&#65039;</span>
+      <div class="kpi-val">$4,337</div>
+      <div class="kpi-label">Wash &amp; Fold</div>
+      <div class="kpi-sub">2,116 lbs</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">&#127745;</span>
+      <div class="kpi-val">$673</div>
+      <div class="kpi-label">Tailoring</div>
+      <div class="kpi-sub">32 orders</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">&#128666;</span>
+      <div class="kpi-val">$120</div>
+      <div class="kpi-label">Delivery Revenue</div>
+      <div class="kpi-sub">5 deliveries</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">&#128716;&#65039;</span>
+      <div class="kpi-val">39</div>
+      <div class="kpi-label">Comforter Units</div>
+      <div class="kpi-sub">$610 revenue</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">&#128257;</span>
+      <div class="kpi-val">31.4%</div>
+      <div class="kpi-label">Repeat Rate</div>
+      <div class="kpi-sub">81 of 258 custs</div>
+      <div class="kpi-chg neg">▼ 7.6% vs Sep</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">&#128100;</span>
+      <div class="kpi-val">258</div>
+      <div class="kpi-label">New Customers</div>
+      <div class="kpi-sub">retail only</div>
+    </div>
+    <div class="kpi-card" style="border-top: 2px solid var(--neg);">
+      <span class="kpi-icon">&#9888;&#65039;</span>
+      <div class="kpi-val" style="color:var(--neg);">$2,172.98</div>
+      <div class="kpi-label">AR Outstanding</div>
+      <div class="kpi-sub">excluded from revenue</div>
+    </div>
+  </div>
+
+  <!-- REVENUE BY SERVICE TYPE -->
+  <div class="section-label">Revenue by Service Type</div>
+  <div class="charts-grid" style="margin-bottom:10px;">
+    <div class="chart-card wide">
+      <div class="chart-title">Combined Revenue by Type — All Categories + Total Line</div>
+      <div class="chart-wrap tall"><canvas id="trendRevChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Cents Service Mix — Full Month</div>
+      <div class="chart-wrap tall"><canvas id="svcChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-grid-2" style="margin-bottom:10px;">
+    <div class="chart-card">
+      <div class="chart-title">Cents Revenue Mix by Category + Total Line</div>
+      <div class="chart-wrap medium"><canvas id="trendSvcChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Monthly Orders — Total Count</div>
+      <div class="chart-wrap medium"><canvas id="trendOrdersChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- FASCARD SELF-SERVICE -->
+  <div class="section-label">Fascard Self-Service Revenue — Jun 2025 to October 2026</div>
+  <div class="charts-grid" style="margin-bottom:10px;">
+    <div class="chart-card wide">
+      <div class="chart-title">Monthly Self-Service Revenue by Category (Stacked)</div>
+      <div class="chart-wrap medium"><canvas id="fascardBarChart"></canvas></div>
+    </div>
+    <div class="chart-card" style="display:flex;flex-direction:column;justify-content:space-between;">
+      <div class="chart-title">October 2026  — Fascard Breakdown</div>
+      <table class="stat-table">
+        <tr><th>Category</th><th class="snum">Amount</th><th class="snum">Mix</th></tr>
+        <tr><td>CC Starts</td><td class="snum">$7,663.75</td><td class="snum">31%</td></tr>
+        <tr><td>Cash to Kiosk</td><td class="snum">$10,774.00</td><td class="snum">43%</td></tr>
+        <tr><td>Credit at Machine</td><td class="snum">$5,960.00</td><td class="snum">24%</td></tr>
+        <tr><td>Credit via Internet</td><td class="snum">$441.50</td><td class="snum">2%</td></tr>
+        <tr style="font-weight:700;border-top:1px solid var(--border)"><td>Total Fascard</td><td class="snum" style="color:var(--teal-bright)">$24,839</td><td class="snum">100%</td></tr>
+      </table>
+      <div style="margin-top:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(10,146,120,0.1);border:1px solid var(--teal);border-radius:5px;padding:6px 10px;">
+          <span style="font-size:10px;color:var(--teal-mid);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Combined Store Total</span>
+          <span style="font-size:16px;font-weight:700;color:var(--teal-bright)">$39,254</span>
+        </div>
+        <div style="font-size:10px;color:var(--gray);margin-top:5px;">Fascard is fully separate from Cents. No overlap in revenue.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- PERFORMANCE TRENDS -->
+  <div class="section-label">Performance Trends</div>
+
+  <div class="charts-grid-2" style="margin-top:4px;">
+    <div class="chart-card">
+      <div class="chart-title">Delivery Revenue — Month over Month</div>
+      <div class="chart-wrap"><canvas id="trendDelRevChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Delivery Orders — Month over Month</div>
+      <div class="chart-wrap"><canvas id="trendDelNChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-grid-2" style="margin-top:10px;">
+    <div class="chart-card">
+      <div class="chart-title">Repeat Customer Rate (%)</div>
+      <div class="chart-wrap"><canvas id="trendRepeatChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">New Customers — Month over Month</div>
+      <div class="chart-wrap"><canvas id="trendUniqChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-grid-2" style="margin-top:10px;">
+    <div class="chart-card">
+      <div class="chart-title">Comforter Program — Units Sold</div>
+      <div class="chart-wrap"><canvas id="trendComfUChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Comforter Revenue — Month over Month</div>
+      <div class="chart-wrap"><canvas id="trendComfRChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-grid-2" style="margin-top:10px;">
+    <div class="chart-card">
+      <div class="chart-title">Dry Cleaning Revenue — Month over Month</div>
+      <div class="chart-wrap"><canvas id="trendDcChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Shirt Laundry Revenue — Month over Month</div>
+      <div class="chart-wrap"><canvas id="trendSlChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-grid-2" style="margin-top:10px;">
+    <div class="chart-card">
+      <div class="chart-title">Tailoring Revenue — Month over Month</div>
+      <div class="chart-wrap"><canvas id="trendTailChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Weekly Revenue — October 2026</div>
+      <div class="chart-wrap"><canvas id="wkRevChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-grid-2" style="margin-top:10px;margin-bottom:10px;">
+    <div class="chart-card">
+      <div class="chart-title">Weekly Orders — October 2026</div>
+      <div class="chart-wrap"><canvas id="wkOrdChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">W&amp;F Weight — Monthly (lbs)</div>
+      <div class="chart-wrap"><canvas id="trendLbsChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-grid-2" style="margin-top:10px;margin-bottom:10px;">
+    <div class="chart-card">
+      <div class="chart-title">Top 5 Retail Customers — October 2026</div>
+      <div class="chart-wrap medium"><canvas id="topCustChart"></canvas></div>
+    </div>
+    <div class="chart-card" style="visibility:hidden;"></div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- MEMBERSHIP PROGRAM -->
+  <div class="section-label">Membership Program</div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:10px;"><span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--teal-mid)">&#127993; Active Memberships — Current Snapshot</span><span style="font-size:22px;font-weight:700;color:var(--teal-bright)">1<span style="font-size:11px;color:var(--gray);font-weight:400;margin-left:4px">total active</span></span></div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;"><div style="text-align:center;opacity:0.35;"><div style="font-size:18px">👤</div><div style="font-size:20px;font-weight:700;color:var(--white);line-height:1.2">0</div><div style="font-size:9px;color:var(--gray);text-transform:uppercase;letter-spacing:.8px">Singles</div></div><div style="text-align:center;opacity:0.35;"><div style="font-size:18px">👫</div><div style="font-size:20px;font-weight:700;color:var(--white);line-height:1.2">0</div><div style="font-size:9px;color:var(--gray);text-transform:uppercase;letter-spacing:.8px">Couples</div></div><div style="text-align:center;opacity:0.35;"><div style="font-size:18px">👨‍👩‍👧</div><div style="font-size:20px;font-weight:700;color:var(--white);line-height:1.2">0</div><div style="font-size:9px;color:var(--gray);text-transform:uppercase;letter-spacing:.8px">Family</div></div><div style="text-align:center;opacity:0.35;"><div style="font-size:18px">⭐</div><div style="font-size:20px;font-weight:700;color:var(--white);line-height:1.2">0</div><div style="font-size:9px;color:var(--gray);text-transform:uppercase;letter-spacing:.8px">VIP</div></div><div style="text-align:center;opacity:1;"><div style="font-size:18px">🎫</div><div style="font-size:20px;font-weight:700;color:var(--white);line-height:1.2">1</div><div style="font-size:9px;color:var(--gray);text-transform:uppercase;letter-spacing:.8px">Individual</div></div></div></div>
+  <div class="charts-grid-2" style="margin-bottom:10px;">
+    <div class="chart-card">
+      <div class="chart-title">Membership Program — New Signups vs Cancellations</div>
+      <div class="chart-wrap"><canvas id="membershipChart"></canvas></div>
+    </div>
+    <div class="chart-card" style="visibility:hidden;"></div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- DETAILED BREAKDOWNS -->
+  <div class="section-label">Detailed Breakdowns — October 2026</div>
+  <div class="stats-grid" style="margin-top:6px;">
+
+    <!-- Service Breakdown -->
+    <div class="stat-card">
+      <div class="stat-card-title">Service Breakdown</div>
+      <table class="stat-table">
+        <tr><th>Service</th><th class="snum">Ord.</th><th class="snum">Revenue</th><th class="snum">Mix</th></tr>
+        <tr><td>Fascard (Self-Svc)</td><td class="num">—</td><td class="num" style="color:var(--teal-bright)">$24,839.25</td><td class="num">63%</td></tr><tr><td>Dry Cleaning</td><td class="num">260</td><td class="num">$4,426.63</td><td class="num">11%</td></tr><tr><td>Wash & Fold</td><td class="num">109</td><td class="num">$4,337.36</td><td class="num">11%</td></tr><tr><td>Shirt Laundry</td><td class="num">241</td><td class="num">$4,042.83</td><td class="num">10%</td></tr><tr><td>Tailoring</td><td class="num">32</td><td class="num">$673.31</td><td class="num">2%</td></tr><tr><td>Comforter</td><td class="num">25</td><td class="num">$610.43</td><td class="num">2%</td></tr><tr><td>Products</td><td class="num">52</td><td class="num">$300.76</td><td class="num">1%</td></tr><tr><td>Specialty</td><td class="num">1</td><td class="num">$23.00</td><td class="num">0%</td></tr>
+      </table>
+      <div style="margin-top:10px;">
+        <div class="stat-card-subtitle">Payment Methods</div>
+        <div class="chart-wrap short"><canvas id="payChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Customer Overview + Top 5 -->
+    <div class="stat-card">
+      <div class="stat-card-title">Customer Overview</div>
+      <table class="stat-table" style="margin-bottom:8px;">
+        <tr><td>New customers (retail)</td><td class="snum" style="color:var(--teal-bright);font-weight:700">258</td></tr>
+        <tr><td>Repeat customers</td><td class="snum" style="color:var(--teal-bright);font-weight:700">81</td></tr>
+        <tr><td>Repeat rate</td><td class="snum" style="color:var(--teal-bright);font-weight:700">31.4%</td></tr>
+        <tr><td>Avg days between orders</td><td class="snum">64.7</td></tr>
+        <tr><td>Avg order value</td><td class="snum">$20.02</td></tr>
+        <tr><td>Delivery orders</td><td class="snum">5</td></tr>
+        <tr><td>Delivery % of revenue</td><td class="snum">1%</td></tr>
+      </table>
+      <div class="stat-card-subtitle">Top 5 Retail Customers</div>
+      <table class="stat-table">
+        <tr><th>Name</th><th class="snum">Revenue</th></tr>
+        <tr><td>JUSTIN Reyes</td><td class="snum">$353.50</td></tr><tr><td>EDWIN TEJEDA</td><td class="snum">$329.50</td></tr><tr><td>CHERILYN WASHENTON</td><td class="snum">$283.49</td></tr><tr><td>Kimberly Chambers</td><td class="snum">$194.00</td></tr><tr><td>CORINNE VAIRO</td><td class="snum">$188.00</td></tr>
+      </table>
+      <div style="background:rgba(255,107,107,0.1);border:1px solid var(--neg);border-radius:5px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+        <span style="font-size:10px;color:var(--neg);font-weight:700;text-transform:uppercase;letter-spacing:.5px">&#9888; Retail AR Outstanding</span>
+        <span style="font-size:16px;font-weight:700;color:var(--neg)">$2,005.68</span>
+      </div>
+    </div>
+
+    <!-- Commercial Accounts + Promos -->
+    <div class="stat-card">
+      <div class="stat-card-title">Commercial Accounts</div>
+      <table class="stat-table" style="margin-bottom:6px;">
+        <tr><th>Account</th><th class="snum">Ord.</th><th class="snum">Rev.</th><th class="snum" style="color:var(--amber)">AR Due</th></tr>
+        <tr><td>Daphenie Pierre</td><td class="num">43</td><td class="num">$1,244.75</td><td class="num" >—</td></tr><tr><td>Kirsten  Bresson</td><td class="num">2</td><td class="num">$282.00</td><td class="num" >—</td></tr><tr><td>Rebecca  White</td><td class="num">1</td><td class="num">$96.20</td><td class="num" style="color:#F59E0B;font-weight:700">$81.30</td></tr><tr><td>Joseph  Becht</td><td class="num">4</td><td class="num">$80.00</td><td class="num" >—</td></tr><tr><td>Arthur Spillios</td><td class="num">12</td><td class="num">$52.50</td><td class="num" style="color:#F59E0B;font-weight:700">$8.00</td></tr><tr><td>Private Guardianship Services</td><td class="num">1</td><td class="num">$38.00</td><td class="num" >—</td></tr><tr><td>Unitarian Universalist Church</td><td class="num">1</td><td class="num">$0.00</td><td class="num" style="color:#F59E0B;font-weight:700">$78.00</td></tr>
+      </table>
+      <div class="stat-card-subtitle">Internal (Sister Store)</div>
+      <table class="stat-table" style="margin-bottom:8px;">
+        <tr><th>Account</th><th class="snum">Ord.</th><th class="snum">Rev.</th><th class="snum" style="color:var(--amber)">AR Due</th></tr>
+        <tr><td>Brighton Star Laundry Club</td><td class="num">185</td><td class="num">$-76.45</td><td class="num" style="color:#F59E0B;font-weight:700">$2,924.70</td></tr>
+      </table>
+      <div style="background:rgba(245,158,11,0.1);border:1px solid var(--amber);border-radius:5px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:10px;color:var(--amber);font-weight:700;text-transform:uppercase;letter-spacing:.5px">&#9888; Total Commercial AR</span>
+        <span style="font-size:16px;font-weight:700;color:var(--amber)">$167.30</span>
+      </div>
+      <div class="stat-card-subtitle">Promo Codes Used</div>
+      <table class="stat-table">
+        <tr><th>Code</th><th class="snum">Orders</th></tr>
+        <tr><td>SENIOR</td><td class="num">38</td></tr><tr><td>HEROES</td><td class="num">24</td></tr><tr><td>OWNER</td><td class="num">10</td></tr><tr><td>EMPLOYEE</td><td class="num">2</td></tr><tr><td>NEW</td><td class="num">2</td></tr><tr><td>Individual Plan 50 lbs Wash & Fold per month 2026-10-09T04:00:00.000Z - 2026-11-09T04:59:59.999Z</td><td class="num">1</td></tr><tr><td>WDF20</td><td class="num">1</td></tr><tr><td>STAR10</td><td class="num">1</td></tr>
+      </table>
+    </div>
+
+  </div>
+
+</div><!-- end .main -->
+
+<!-- FOOTER -->
+<div class="footer">
+  <strong>Star Laundry Club — Nashua</strong> &nbsp;|&nbsp; Operational KPI Dashboard &nbsp;|&nbsp;
+  October 2026 Full Month &nbsp;|&nbsp; Generated November 12, 2026 at 11:08 PM &nbsp;|&nbsp; Data: Cents POS + Fascard
+</div>
+
+
+<script>
+Chart.register(ChartDataLabels);
+Chart.defaults.color = '#9DA8B4';
+Chart.defaults.font.family = "'Segoe UI', Arial, sans-serif";
+Chart.defaults.font.size = 11;
+
+const TEAL='#0A9278', BTEAL='#1EE1DB', MTEAL='#57B3A8';
+const AMBER='#F59E0B', GRAY='#6B7280', BORDER='#353B47';
+const POS='#22c55e', NEG='#ef4444';
+
+const dlBar = {
+  anchor:'end', align:'end', offset:2, clip:false,
+  color:'#CBD5E1', font:{size:9,weight:'600'},
+  formatter: v => v > 0 ? '$'+Math.round(v/1000)+'k' : ''
+};
+const dlBarInside = {
+  anchor:'center', align:'center',
+  color:'#fff', font:{size:9,weight:'600'},
+  formatter: v => v > 0 ? '$'+Math.round(v)+'k' : ''
+};
+const dlLine = {
+  anchor:'end', align:'top', offset:4,
+  color:'#CBD5E1', font:{size:9,weight:'600'},
+  formatter: v => v !== null ? '$'+Math.round(v/1000)+'k' : ''
+};
+
+const gridOpts = { color:BORDER };
+const noLegend = { legend:{display:false} };
+
+// Grouped bar top-label (small, above each bar)
+const insideDL = { anchor:'end', align:'end', offset:2, clip:false,
+  color:'#CBD5E1', font:{size:8,weight:'600'},
+  formatter: v => v > 0 ? '$'+Math.round(v/1000)+'k' : '' };
+
+// Fascard — rendered FIRST to avoid canvas context limit issues
+new Chart(document.getElementById('fascardBarChart'), {
+  type:'bar',
+  data:{
+    labels:["Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026", "Apr 2026", "May 2026", "Jun 2026", "Jul 2026", "Aug 2026", "Sep 2026", "Oct 2026"],
+    datasets:[
+      {label:'CC Starts',           data:[6783.65, 5468.0, 6255.5, 6183.85, 6602.05, 6179.87, 5878.9, 5601.0, 5424.45, 6527.95, 6510.8, 7233.45, 6690.6, 6260.0, 6902.75, 6499.75, 7663.75],    backgroundColor:'#0A9278', stack:'fc', datalabels:{display:false}},
+      {label:'Cash to Kiosk',       data:[9438.0, 9483.0, 9363.0, 9712.0, 10690.0, 10169.0, 8160.0, 9148.0, 8776.0, 10186.0, 8764.0, 9618.0, 8656.0, 8813.0, 9273.0, 8919.0, 10774.0], backgroundColor:'#1EE1DB', stack:'fc', datalabels:{display:false}},
+      {label:'Credit at Machine',   data:[4410.0, 4315.0, 4690.0, 4170.0, 4780.0, 4670.0, 4580.0, 4490.0, 4930.0, 4920.0, 5610.0, 5360.0, 5540.0, 5360.0, 5340.0, 4340.0, 5960.0], backgroundColor:'#57B3A8', stack:'fc', datalabels:{display:false}},
+      {label:'Credit via Internet', data:[265.0, 460.0, 430.0, 410.0, 560.0, 390.0, 620.0, 530.0, 470.0, 430.0, 370.0, 580.0, 367.0, 494.0, 511.0, 376.75, 441.5],  backgroundColor:'#F59E0B', stack:'fc', datalabels:{display:false}},
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{display:true, position:'bottom', labels:{boxWidth:10,padding:8,font:{size:10},color:'#CBD5E1'}},
+      datalabels:{display:false}
+    },
+    scales:{
+      x:{stacked:true, grid:{color:'#353B47'}, ticks:{font:{size:9},color:'#CBD5E1'}},
+      y:{stacked:true, grid:{color:'#353B47'}, ticks:{color:'#CBD5E1',callback:function(v){return '$'+Math.round(v/1000)+'k';}}}
+    }
+  }
+});
+
+// 1. Combined Revenue by Type — grouped bars by category, total combined line
+new Chart(document.getElementById('trendRevChart'), {
+  type:'bar',
+  data:{
+    labels:["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"],
+    datasets:[
+      {label:'Dry Cleaning',       data:[3688.03, 4302.66, 2844.17, 3834.63, 3144.98, 2782.85, 2705.44, 4426.63],       backgroundColor:TEAL,      borderRadius:3, borderSkipped:false, datalabels:insideDL},
+      {label:'Shirt Laundry',      data:[2094.28, 2969.82, 3008.52, 3483.22, 5937.05, 3302.67, 3648.5, 4042.83],        backgroundColor:'#1aa88c', borderRadius:3, borderSkipped:false, datalabels:insideDL},
+      {label:'Wash & Fold',        data:[2686.61, 3146.92, 3742.16, 3356.13, 3604.58, 3902.12, 3474.83, 4337.36],        backgroundColor:BTEAL,     borderRadius:3, borderSkipped:false, datalabels:insideDL},
+      {label:'Tailoring',          data:[128.05, 190.92, 264.39, 280.2, 204.78, 172.82, 243.67, 673.31],      backgroundColor:'#8B5CF6', borderRadius:3, borderSkipped:false, datalabels:insideDL},
+      {label:'Comforter',          data:[290.43, 640.86, 364.72, 408.59, 322.96, 155.72, 322.58, 610.43],    backgroundColor:MTEAL,     borderRadius:3, borderSkipped:false, datalabels:insideDL},
+      {label:'Other / Products',   data:[387.86, 385.64, 403.35, 398.96, 428.5, 393.31, 445.91, 323.76], backgroundColor:GRAY,      borderRadius:3, borderSkipped:false, datalabels:insideDL},
+      {label:'Fascard (Self-Svc)', data:[22063.95, 21254.8, 22791.45, 21253.6, 20927.0, 22026.75, 20135.5, 24839.25],  backgroundColor:AMBER,     borderRadius:3, borderSkipped:false, datalabels:insideDL},
+      {label:'Total Combined',     data:[31339.21, 32891.62, 33418.76, 33015.33, 34569.85, 32736.24, 30976.43, 39253.57],
+        type:'line', borderColor:'#fff', backgroundColor:'transparent',
+        borderWidth:2.5, pointBackgroundColor:'#fff', pointRadius:6, tension:0.3, order:-1,
+        datalabels:{ anchor:'end', align:'top', offset:8, clip:false,
+          color:'#fff', font:{size:11,weight:'700'},
+          formatter:v=>'$'+Math.round(v/1000)+'k total' } },
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    layout:{ padding:{ top:36, right:10 } },
+    scales:{
+      x:{ grid:{color:BORDER} },
+      y:{ grid:{color:BORDER}, ticks:{callback:v=>'$'+Math.round(v/1000)+'k'} }
+    },
+    plugins:{ legend:{position:'bottom', labels:{boxWidth:10,padding:6,font:{size:9}}}, datalabels:{} }
+  }
+});
+
+// 2. Cents Service Revenue Mix — grouped bars by category, total cents line
+new Chart(document.getElementById('trendSvcChart'), {
+  type:'bar',
+  data:{
+    labels:["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"],
+    datasets:[
+      {label:'Dry Cleaning',  data:[3688.03, 4302.66, 2844.17, 3834.63, 3144.98, 2782.85, 2705.44, 4426.63],    backgroundColor:TEAL,      borderRadius:3, borderSkipped:false, datalabels:insideDL},
+      {label:'Shirt Laundry', data:[2094.28, 2969.82, 3008.52, 3483.22, 5937.05, 3302.67, 3648.5, 4042.83],     backgroundColor:'#1aa88c', borderRadius:3, borderSkipped:false, datalabels:insideDL},
+      {label:'Wash & Fold',   data:[2686.61, 3146.92, 3742.16, 3356.13, 3604.58, 3902.12, 3474.83, 4337.36],     backgroundColor:BTEAL,     borderRadius:3, borderSkipped:false, datalabels:insideDL},
+      {label:'Tailoring',     data:[128.05, 190.92, 264.39, 280.2, 204.78, 172.82, 243.67, 673.31],   backgroundColor:'#8B5CF6', borderRadius:3, borderSkipped:false, datalabels:insideDL},
+      {label:'Comforter',     data:[290.43, 640.86, 364.72, 408.59, 322.96, 155.72, 322.58, 610.43], backgroundColor:MTEAL,     borderRadius:3, borderSkipped:false, datalabels:insideDL},
+      {label:'Total Cents',   data:[9275.26, 11636.82, 10627.31, 11761.73, 13642.85, 10709.49, 10840.93, 14414.32],
+        type:'line', borderColor:AMBER, backgroundColor:'transparent',
+        borderWidth:2.5, pointBackgroundColor:AMBER, pointRadius:6, tension:0.3, order:-1,
+        datalabels:{ anchor:'end', align:'top', offset:8, clip:false,
+          color:AMBER, font:{size:11,weight:'700'}, formatter:v=>'$'+Math.round(v/1000)+'k' } },
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    layout:{ padding:{ top:36, right:10 } },
+    scales:{
+      x:{ grid:{color:BORDER} },
+      y:{ grid:{color:BORDER}, ticks:{callback:v=>'$'+Math.round(v/1000)+'k'} }
+    },
+    plugins:{ legend:{position:'bottom', labels:{boxWidth:10,padding:6,font:{size:9}}}, datalabels:{} }
+  }
+});
+
+const PAD_TOP = { layout:{ padding:{ top:24 } } };
+const PAD_TOP_SM = { layout:{ padding:{ top:20 } } };
+
+// 3. Trend — Orders bar
+new Chart(document.getElementById('trendOrdersChart'), {
+  type:'bar',
+  data:{ labels:["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"], datasets:[{label:'Orders', data:[541, 584, 640, 646, 576, 596, 657, 720], backgroundColor:TEAL, borderRadius:4}] },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:24 } },
+    scales:{ x:{grid:{color:BORDER}}, y:{grid:{color:BORDER}} },
+    plugins:{ legend:{display:false}, datalabels:{ anchor:'end',align:'end',offset:2,clip:false,color:'#CBD5E1',font:{size:10,weight:'600'} } }
+  }
+});
+
+// 4. Trend — Unique customers
+new Chart(document.getElementById('trendUniqChart'), {
+  type:'bar',
+  data:{ labels:["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"], datasets:[{label:'New Customers', data:[233, 220, 241, 226, 206, 215, 241, 258], backgroundColor:BTEAL, borderRadius:4}] },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:24 } },
+    scales:{ x:{grid:{color:BORDER}}, y:{grid:{color:BORDER}} },
+    plugins:{ legend:{display:false}, datalabels:{ anchor:'end',align:'end',offset:2,clip:false,color:'#CBD5E1',font:{size:10,weight:'600'} } }
+  }
+});
+
+// 5. Trend — Repeat rate line
+new Chart(document.getElementById('trendRepeatChart'), {
+  type:'line',
+  data:{
+    labels:["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"],
+    datasets:[{
+      label:'Repeat Rate %', data:[36.1, 40.0, 35.3, 39.4, 35.9, 33.0, 34.0, 31.4],
+      borderColor:AMBER, backgroundColor:'rgba(245,158,11,0.15)',
+      tension:0.3, fill:true, pointBackgroundColor:AMBER, pointRadius:5
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:24 } },
+    scales:{ x:{grid:{color:BORDER}}, y:{grid:{color:BORDER}, ticks:{callback:v=>v+'%'}} },
+    plugins:{ legend:{display:false}, datalabels:{ anchor:'end',align:'top',offset:4,clip:false,color:'#CBD5E1',font:{size:10,weight:'600'},formatter:v=>v+'%' } }
+  }
+});
+
+// 6a. Trend — Comforter units
+new Chart(document.getElementById('trendComfUChart'), {
+  type:'bar',
+  data:{ labels:["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"], datasets:[{label:'Units', data:[19, 37, 26, 33, 23, 12, 24, 39], backgroundColor:MTEAL, borderRadius:4}] },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:24 } },
+    scales:{ x:{grid:{color:BORDER}}, y:{grid:{color:BORDER}, ticks:{stepSize:1}} },
+    plugins:{ legend:{display:false}, datalabels:{ anchor:'end',align:'end',offset:2,clip:false,color:'#CBD5E1',font:{size:10,weight:'600'},formatter:v=>v+' units' } }
+  }
+});
+
+// 6b. Trend — Comforter revenue
+new Chart(document.getElementById('trendComfRChart'), {
+  type:'bar',
+  data:{ labels:["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"], datasets:[{label:'Revenue', data:[290.43, 640.86, 364.72, 408.59, 322.96, 155.72, 322.58, 610.43], backgroundColor:TEAL, borderRadius:4}] },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:24 } },
+    scales:{ x:{grid:{color:BORDER}}, y:{grid:{color:BORDER}, ticks:{callback:v=>'$'+v.toLocaleString()}} },
+    plugins:{ legend:{display:false}, datalabels:{ anchor:'end',align:'end',offset:2,clip:false,color:'#CBD5E1',font:{size:10,weight:'600'},formatter:v=>'$'+v.toLocaleString() } }
+  }
+});
+
+// 6c. Trend — Tailoring revenue
+new Chart(document.getElementById('trendTailChart'), {
+  type:'bar',
+  data:{ labels:["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"], datasets:[{label:'Revenue', data:[128.05, 190.92, 264.39, 280.2, 204.78, 172.82, 243.67, 673.31], backgroundColor:AMBER, borderRadius:4}] },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:24 } },
+    scales:{ x:{grid:{color:BORDER}}, y:{grid:{color:BORDER}, ticks:{callback:v=>'$'+v.toLocaleString()}} },
+    plugins:{ legend:{display:false}, datalabels:{ anchor:'end',align:'end',offset:2,clip:false,color:'#CBD5E1',font:{size:10,weight:'600'},formatter:v=>v>0?'$'+v.toLocaleString():'' } }
+  }
+});
+
+// 6c2. Trend — Dry Cleaning revenue
+new Chart(document.getElementById('trendDcChart'), {
+  type:'bar',
+  data:{ labels:["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"], datasets:[{label:'Dry Cleaning', data:[3688.03, 4302.66, 2844.17, 3834.63, 3144.98, 2782.85, 2705.44, 4426.63], backgroundColor:'#6366F1', borderRadius:4}] },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:24 } },
+    scales:{ x:{grid:{color:BORDER}}, y:{grid:{color:BORDER}, ticks:{callback:v=>'$'+v.toLocaleString()}} },
+    plugins:{ legend:{display:false}, datalabels:{ anchor:'end',align:'end',offset:2,clip:false,color:'#CBD5E1',font:{size:10,weight:'600'},formatter:v=>v>0?'$'+v.toLocaleString():'' } }
+  }
+});
+
+// 6c3. Trend — Shirt Laundry revenue
+new Chart(document.getElementById('trendSlChart'), {
+  type:'bar',
+  data:{ labels:["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"], datasets:[{label:'Shirt Laundry', data:[2094.28, 2969.82, 3008.52, 3483.22, 5937.05, 3302.67, 3648.5, 4042.83], backgroundColor:'#10B981', borderRadius:4}] },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:24 } },
+    scales:{ x:{grid:{color:BORDER}}, y:{grid:{color:BORDER}, ticks:{callback:v=>'$'+v.toLocaleString()}} },
+    plugins:{ legend:{display:false}, datalabels:{ anchor:'end',align:'end',offset:2,clip:false,color:'#CBD5E1',font:{size:10,weight:'600'},formatter:v=>v>0?'$'+v.toLocaleString():'' } }
+  }
+});
+
+// 6d. Trend — Delivery revenue
+new Chart(document.getElementById('trendDelRevChart'), {
+  type:'bar',
+  data:{ labels:["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"], datasets:[{label:'Delivery Revenue', data:[471.3, 0, 77.67, 509.16, 572.96, 619.59, 627.45, 120.33], backgroundColor:'#EC4899', borderRadius:4}] },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:24 } },
+    scales:{ x:{grid:{color:BORDER}}, y:{grid:{color:BORDER}, ticks:{callback:v=>'$'+v.toLocaleString()}} },
+    plugins:{ legend:{display:false}, datalabels:{ anchor:'end',align:'end',offset:2,clip:false,color:'#CBD5E1',font:{size:10,weight:'600'},formatter:v=>v>0?'$'+Math.round(v/1000)+'k':'' } }
+  }
+});
+
+// 6e. Trend — Delivery orders count
+new Chart(document.getElementById('trendDelNChart'), {
+  type:'bar',
+  data:{ labels:["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"], datasets:[{label:'Delivery Orders', data:[5, 0, 2, 9, 6, 13, 8, 5], backgroundColor:'#EC4899', borderRadius:4}] },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:24 } },
+    scales:{ x:{grid:{color:BORDER}}, y:{grid:{color:BORDER}, ticks:{stepSize:1}} },
+    plugins:{ legend:{display:false}, datalabels:{ anchor:'end',align:'end',offset:2,clip:false,color:'#CBD5E1',font:{size:10,weight:'600'},formatter:v=>v+' orders' } }
+  }
+});
+
+// 6. Weekly revenue bar
+new Chart(document.getElementById('wkRevChart'), {
+  type:'bar',
+  data:{ labels:["Oct 1\u20137", "Oct 8\u201314", "Oct 15\u201321", "Oct 22\u201331"], datasets:[{label:'Revenue ($)', data:[3906.12, 3404.66, 2961.93, 4141.61], backgroundColor:TEAL, borderRadius:4}] },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:24 } },
+    scales:{ x:{grid:{color:BORDER}}, y:{grid:{color:BORDER}, ticks:{callback:v=>'$'+v.toLocaleString()}} },
+    plugins:{ legend:{display:false}, datalabels:dlBar }
+  }
+});
+
+// 7. Service mix doughnut
+new Chart(document.getElementById('svcChart'), {
+  type:'doughnut',
+  data:{ labels:["Dry Cleaning", "Wash & Fold", "Shirt Laundry", "Tailoring", "Comforter", "Products", "Specialty"], datasets:[{data:[4426.63, 4337.36, 4042.83, 673.31, 610.43, 300.76, 23.0], backgroundColor:[TEAL,BTEAL,AMBER,MTEAL,GRAY,'#8B5CF6','#EC4899'], borderColor:'#22262f', borderWidth:2}] },
+  options:{
+    responsive:true, maintainAspectRatio:true, cutout:'55%',
+    plugins:{
+      legend:{position:'right', labels:{boxWidth:8,padding:5,font:{size:10}}},
+      datalabels:{
+        color:'#fff', font:{size:9,weight:'600'},
+        formatter:(v,ctx)=>{
+          const total=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+          const pct=Math.round(v/total*100); return pct>=10?pct+'%':'';
+        }
+      }
+    }
+  }
+});
+
+// 8. Weekly orders + weight combo
+new Chart(document.getElementById('wkOrdChart'), {
+  type:'bar',
+  data:{ labels:["Oct 1\u20137", "Oct 8\u201314", "Oct 15\u201321", "Oct 22\u201331"], datasets:[{label:'Orders', data:[174, 168, 155, 223], backgroundColor:TEAL, borderRadius:4}] },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:24 } },
+    scales:{ x:{grid:{color:BORDER}}, y:{grid:{color:BORDER}} },
+    plugins:{ legend:{display:false}, datalabels:{ anchor:'end',align:'end',offset:2,clip:false,color:'#CBD5E1',font:{size:10,weight:'600'} } }
+  }
+});
+
+// Monthly W&F Weight trend
+new Chart(document.getElementById('trendLbsChart'), {
+  type:'bar',
+  data:{ labels:["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"], datasets:[{label:'W&F Lbs', data:[1478, 1758, 2045, 1841, 1759, 2234, 1733, 2116], backgroundColor:AMBER, borderRadius:4}] },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:24 } },
+    scales:{ x:{grid:{color:BORDER}}, y:{grid:{color:BORDER}} },
+    plugins:{ legend:{display:false}, datalabels:{ anchor:'end',align:'end',offset:2,clip:false,color:'#CBD5E1',font:{size:10,weight:'600'}, formatter:v=>v>0?v.toLocaleString()+' lbs':'' } }
+  }
+});
+
+// 9. Top 5 customers horizontal bar
+new Chart(document.getElementById('topCustChart'), {
+  type:'bar',
+  data:{ labels:["JUSTIN R.", "EDWIN T.", "CHERILYN W.", "Kimberly C.", "CORINNE V."], datasets:[{label:'Revenue', data:[353.5, 329.5, 283.49, 194.0, 188.0], backgroundColor:TEAL, borderRadius:3}] },
+  options:{
+    indexAxis:'y', responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ right:70 } },
+    scales:{ x:{grid:{color:BORDER}, ticks:{callback:v=>'$'+v.toLocaleString()}}, y:{grid:{color:BORDER}} },
+    plugins:{ legend:{display:false}, datalabels:{ anchor:'end',align:'end',offset:4,clip:false,color:'#CBD5E1',font:{size:9,weight:'600'},formatter:v=>'$'+v.toLocaleString() } }
+  }
+});
+
+// 9b. Membership program — new signups vs cancellations
+const memNew       = [null, null, null, null, null, null, 0, 1];
+const memCancelled = [null, null, null, null, null, null, 0, 0];
+new Chart(document.getElementById('membershipChart'), {
+  type:'bar',
+  data:{
+    labels:["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"],
+    datasets:[
+      {label:'New Memberships', data:memNew,       backgroundColor:TEAL_BRIGHT, borderRadius:3},
+      {label:'Cancellations',   data:memCancelled, backgroundColor:'#FF6B6B',   borderRadius:3},
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:24 } },
+    plugins:{
+      legend:{ display:true, labels:{ color:'#CBD5E1', font:{size:10} } },
+      datalabels:{ anchor:'end', align:'end', offset:2, clip:false, color:'#CBD5E1',
+                    font:{size:10,weight:'600'}, formatter: v => v === null ? '' : v },
+    },
+    scales:{
+      x:{ grid:{color:BORDER} },
+      y:{ grid:{color:BORDER}, beginAtZero:true, ticks:{ stepSize:1, callback:v=>Number.isInteger(v)?v:'' } }
+    }
+  }
+});
+
+// 10. Payment methods doughnut
+new Chart(document.getElementById('payChart'), {
+  type:'doughnut',
+  data:{ labels:["Debit/Credit", "Cash", "Check", "Cash, Debit/Credit"], datasets:[{data:[10816.0, 1989.5, 1378.95, 3.0], backgroundColor:[TEAL,BTEAL,AMBER,MTEAL,GRAY], borderColor:'#22262f', borderWidth:2}] },
+  options:{
+    responsive:true, maintainAspectRatio:true, cutout:'55%',
+    plugins:{
+      legend:{position:'right', labels:{boxWidth:8,padding:5,font:{size:10}}},
+      datalabels:{
+        color:'#fff', font:{size:9,weight:'600'},
+        formatter:(v,ctx)=>{
+          const total=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+          const pct=Math.round(v/total*100); return pct>=10?pct+'%':'';
+        }
+      }
+    }
+  }
+});
+
+</script>
+</body>
+</html>
